@@ -2,19 +2,59 @@
 
 namespace App\Controller;
 
+use App\Entity\Book;
+use App\Repository\BookRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class BooksController extends AbstractController
 {
-    /**
-     * @Route("/books", name="books")
-     */
-    public function index()
+    private BookRepository $repository;
+
+    public function __construct(BookRepository $bookRepository)
     {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/BooksController.php',
-        ]);
+        $this->repository = $bookRepository;
     }
+
+    /**
+     * @Route("/books/{isbn}", methods={"GET"})
+     * @param string $isbn
+     * @return JsonResponse
+     */
+    public function get(string $isbn): JsonResponse
+    {
+        $book = $this->repository->search($isbn);
+
+        return new JsonResponse(
+            [
+                'isbn' => $book->isbn(),
+                'title' => $book->title(),
+                'author' => $book->author()
+            ]
+        );
+    }
+
+    /**
+     * @Route("/books", methods={"POST"})
+     * @param Request $request
+     * @return Response
+     */
+    public function create(Request $request): Response
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $isbn = $data['isbn'];
+        $title = $data['title'];
+        $author = $data['author'];
+
+        $book = new Book($isbn, $title, $author);
+
+        $this->repository->save($book);
+
+        return new Response('', Response::HTTP_CREATED);
+    }
+
 }

@@ -2,12 +2,11 @@
 
 namespace App\Entity;
 
-use App\Repository\BookRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  *
- * @ORM\Entity(repositoryClass=BookRepository::class)
+ * @ORM\Entity
  * @ORM\Table(name="books")
  */
 class Book
@@ -28,34 +27,35 @@ class Book
      */
     private string $author;
 
-    public function getIsbn(): string
+    public function __construct(string $isbn, string $title, string $author)
+    {
+        $this->isbn = $isbn;
+        $this->title = $title;
+        $this->author = $author;
+    }
+
+    public function isbn(): string
     {
         return $this->isbn;
     }
 
-    public function setIsbn(string $isbn): void
-    {
-        $this->isbn = $isbn;
-    }
-
-    public function getTitle(): string
+    public function title(): string
     {
         return $this->title;
     }
 
-    public function setTitle($title)
-    {
-        $this->title = $title;
-    }
-
-    public function setAuthor($author): void
-    {
-        $this->author = $author;
-    }
-
-    public function getAuthor(): string
+    public function author(): string
     {
         return $this->author;
     }
 
+    public function updateTitle($title): void
+    {
+        $this->title = $title;
+    }
+
+    public function updateAuthor($author): void
+    {
+        $this->author = $author;
+    }
 }
