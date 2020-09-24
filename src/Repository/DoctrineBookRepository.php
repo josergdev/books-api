@@ -31,4 +31,8 @@ class DoctrineBookRepository implements BookRepository
         return $this->entityManager->getRepository(Book::class)->find($isbn);
     }
 
+    public function searchAll(): array
+    {
+        return $this->entityManager->getRepository(Book::class)->findAll();
+    }
 }

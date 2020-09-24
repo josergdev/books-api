@@ -11,4 +11,6 @@ interface BookRepository
     public function remove(Book $book): void;
 
     public function search(string $isbn): ?Book;
+
+    public function searchAll(): array;
 }

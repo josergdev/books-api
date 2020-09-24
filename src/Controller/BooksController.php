@@ -38,6 +38,28 @@ class BooksController extends AbstractController
     }
 
     /**
+     * @Route("/books", methods={"GET"})
+     * @return JsonResponse
+     */
+    public function getAll(): JsonResponse
+    {
+        $books = $this->repository->searchAll();
+
+        $book_mapper = function (Book $book)
+        {
+            return [
+                'isbn' => $book->isbn(),
+                'title' => $book->title(),
+                'author' => $book->author()
+            ];
+        };
+
+        return new JsonResponse(
+            array_map($book_mapper, $books)
+        );
+    }
+
+    /**
      * @Route("/books", methods={"POST"})
      * @param Request $request
      * @return Response
@@ -55,6 +77,29 @@ class BooksController extends AbstractController
         $this->repository->save($book);
 
         return new Response('', Response::HTTP_CREATED);
+    }
+
+    /**
+     * @Route("/books/{isbn}", methods={"PUT"})
+     * @param string $isbn
+     * @param Request $request
+     * @return Response
+     */
+    public function update(string $isbn, Request $request): Response
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $title = $data['title'];
+        $author = $data['author'];
+
+        $book = $this->repository->search($isbn);
+
+        $book->updateTitle($title);
+        $book->updateAuthor($author);
+
+        $this->repository->save($book);
+
+        return new Response('', Response::HTTP_OK);
     }
 
 }
