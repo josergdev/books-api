@@ -102,4 +102,21 @@ class BooksController extends AbstractController
         return new Response('', Response::HTTP_OK);
     }
 
+    /**
+     * @Route("/books/{isbn}", methods={"DELETE"})
+     * @param string $isbn
+     * @return Response
+     */
+    public function remove(string $isbn): Response
+    {
+        $book = $this->repository->search($isbn);
+
+        if (!is_null($book))
+        {
+            $this->repository->remove($book);
+        }
+
+        return new Response('', Response::HTTP_OK);
+    }
+
 }
