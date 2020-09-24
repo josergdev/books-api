@@ -31,6 +31,11 @@ class DoctrineBookRepository implements BookRepository
         return $this->entityManager->getRepository(Book::class)->find($isbn);
     }
 
+    public function searchByTitle(string $title): ?Book
+    {
+        return $this->entityManager->getRepository(Book::class)->findOneBy(['title' => $title]);
+    }
+
     public function searchAll(): array
     {
         return $this->entityManager->getRepository(Book::class)->findAll();

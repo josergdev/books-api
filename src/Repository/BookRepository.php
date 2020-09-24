@@ -12,5 +12,7 @@ interface BookRepository
 
     public function search(string $isbn): ?Book;
 
+    public function searchByTitle(string $title): ?Book;
+
     public function searchAll(): array;
 }

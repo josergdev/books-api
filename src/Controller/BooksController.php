@@ -72,6 +72,13 @@ class BooksController extends AbstractController
         $title = $data['title'];
         $author = $data['author'];
 
+        $existingBook = $this->repository->searchByTitle($title);
+
+        if (!is_null($existingBook))
+        {
+            return new Response('', Response::HTTP_BAD_REQUEST);
+        }
+
         $book = new Book($isbn, $title, $author);
 
         $this->repository->save($book);
