@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Application\AllBookFinder;
+use App\Application\BookFinder;
 use App\Entity\Book;
 use App\Repository\BookRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,10 +15,14 @@ use Symfony\Component\Routing\Annotation\Route;
 class BooksController extends AbstractController
 {
     private BookRepository $repository;
+    private BookFinder $finder;
+    private AllBookFinder $allFinder;
 
-    public function __construct(BookRepository $bookRepository)
+    public function __construct(BookRepository $bookRepository, BookFinder $finder, AllBookFinder $allFinder)
     {
         $this->repository = $bookRepository;
+        $this->finder = $finder;
+        $this->allFinder = $allFinder;
     }
 
     /**
@@ -26,7 +32,7 @@ class BooksController extends AbstractController
      */
     public function get(string $isbn): JsonResponse
     {
-        $book = $this->repository->search($isbn);
+        $book = $this->finder->find($isbn);
 
         return new JsonResponse(
             [
@@ -43,7 +49,7 @@ class BooksController extends AbstractController
      */
     public function getAll(): JsonResponse
     {
-        $books = $this->repository->searchAll();
+        $books =$this->allFinder->findAll();
 
         $book_mapper = function (Book $book)
         {
@@ -76,7 +82,10 @@ class BooksController extends AbstractController
 
         if (!is_null($existingBook))
         {
-            return new Response('', Response::HTTP_BAD_REQUEST);
+            return new JsonResponse([
+                'error' => "A book with the same title cannot be added twice.",
+                "status" => Response::HTTP_BAD_REQUEST
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $book = new Book($isbn, $title, $author);
@@ -98,6 +107,16 @@ class BooksController extends AbstractController
 
         $title = $data['title'];
         $author = $data['author'];
+
+        $existingBook = $this->repository->searchByTitle($title);
+
+        if (!is_null($existingBook))
+        {
+            return new JsonResponse([
+                'error' => "A book with the same title cannot be added twice.",
+                "status" => Response::HTTP_BAD_REQUEST
+            ], Response::HTTP_BAD_REQUEST);
+        }
 
         $book = $this->repository->search($isbn);
 
