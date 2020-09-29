@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Application\AllBookFinder;
+use App\Application\BookCreator;
 use App\Application\BookFinder;
+use App\Domain\BookAlreadyExists;
 use App\Entity\Book;
 use App\Repository\BookRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,12 +19,14 @@ class BooksController extends AbstractController
     private BookRepository $repository;
     private BookFinder $finder;
     private AllBookFinder $allFinder;
+    private BookCreator $creator;
 
-    public function __construct(BookRepository $bookRepository, BookFinder $finder, AllBookFinder $allFinder)
+    public function __construct(BookRepository $bookRepository, BookFinder $finder, AllBookFinder $allFinder, BookCreator $creator)
     {
         $this->repository = $bookRepository;
         $this->finder = $finder;
         $this->allFinder = $allFinder;
+        $this->creator = $creator;
     }
 
     /**
@@ -78,19 +82,16 @@ class BooksController extends AbstractController
         $title = $data['title'];
         $author = $data['author'];
 
-        $existingBook = $this->repository->searchByTitle($title);
+        try {
 
-        if (!is_null($existingBook))
-        {
+            $this->creator->create($isbn, $title, $author);
+
+        } catch (BookAlreadyExists $exception) {
             return new JsonResponse([
-                'error' => "A book with the same title cannot be added twice.",
-                "status" => Response::HTTP_BAD_REQUEST
+                'error' => $exception->getMessage(),
+                'status' => Response::HTTP_BAD_REQUEST
             ], Response::HTTP_BAD_REQUEST);
         }
-
-        $book = new Book($isbn, $title, $author);
-
-        $this->repository->save($book);
 
         return new Response('', Response::HTTP_CREATED);
     }
