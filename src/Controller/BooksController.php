@@ -5,7 +5,9 @@ namespace App\Controller;
 use App\Application\AllBookFinder;
 use App\Application\BookCreator;
 use App\Application\BookFinder;
+use App\Application\BookUpdater;
 use App\Domain\BookAlreadyExists;
+use App\Domain\BookNotExist;
 use App\Entity\Book;
 use App\Repository\BookRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,13 +22,15 @@ class BooksController extends AbstractController
     private BookFinder $finder;
     private AllBookFinder $allFinder;
     private BookCreator $creator;
+    private BookUpdater $updater;
 
-    public function __construct(BookRepository $bookRepository, BookFinder $finder, AllBookFinder $allFinder, BookCreator $creator)
+    public function __construct(BookRepository $bookRepository, BookFinder $finder, AllBookFinder $allFinder, BookCreator $creator, BookUpdater $updater)
     {
         $this->repository = $bookRepository;
         $this->finder = $finder;
         $this->allFinder = $allFinder;
         $this->creator = $creator;
+        $this->updater = $updater;
     }
 
     /**
@@ -87,10 +91,13 @@ class BooksController extends AbstractController
             $this->creator->create($isbn, $title, $author);
 
         } catch (BookAlreadyExists $exception) {
-            return new JsonResponse([
-                'error' => $exception->getMessage(),
-                'status' => Response::HTTP_BAD_REQUEST
-            ], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(
+                [
+                    'error' => $exception->getMessage(),
+                    'status' => Response::HTTP_BAD_REQUEST
+                ],
+                Response::HTTP_BAD_REQUEST
+            );
         }
 
         return new Response('', Response::HTTP_CREATED);
@@ -109,22 +116,27 @@ class BooksController extends AbstractController
         $title = $data['title'];
         $author = $data['author'];
 
-        $existingBook = $this->repository->searchByTitle($title);
+        try {
 
-        if (!is_null($existingBook))
-        {
-            return new JsonResponse([
-                'error' => "A book with the same title cannot be added twice.",
-                "status" => Response::HTTP_BAD_REQUEST
-            ], Response::HTTP_BAD_REQUEST);
+            $this->updater->update($isbn, $title, $author);
+
+        } catch (BookNotExist $exception) {
+            return new JsonResponse(
+                [
+                    'error' => "Book with isbn " . $isbn . " does not exist.",
+                    "status" => Response::HTTP_NOT_FOUND,
+                ],
+                Response::HTTP_NOT_FOUND
+            );
+        } catch (BookAlreadyExists $exception) {
+            return new JsonResponse(
+                [
+                'error' => $exception->getMessage(),
+                'status' => Response::HTTP_BAD_REQUEST
+                ],
+                Response::HTTP_BAD_REQUEST
+            );
         }
-
-        $book = $this->repository->search($isbn);
-
-        $book->updateTitle($title);
-        $book->updateAuthor($author);
-
-        $this->repository->save($book);
 
         return new Response('', Response::HTTP_OK);
     }

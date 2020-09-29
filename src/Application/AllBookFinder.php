@@ -15,7 +15,8 @@ class AllBookFinder
         $this->repository = $repository;
     }
 
-    public function findAll(): array {
+    public function findAll(): array
+    {
         return $this->repository->searchAll();
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Application;
 
+use App\Domain\BookNotExist;
 use App\Entity\Book;
 use App\Repository\BookRepository;
 
@@ -14,7 +15,7 @@ class BookFinder
         $this->repository = $repository;
     }
 
-    public function find(string $isbn) : Book
+    public function find(string $isbn): Book
     {
         $book = $this->repository->search($isbn);
 

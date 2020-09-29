@@ -16,7 +16,7 @@ class BookCreator
         $this->repository = $repository;
     }
 
-    public function create(string $isbn, string $title, string $author) : void
+    public function create(string $isbn, string $title, string $author): void
     {
         $this->ensureNotDuplicateBook($isbn, $title);
 
@@ -25,7 +25,7 @@ class BookCreator
         $this->repository->save($book);
     }
 
-    public function ensureNotDuplicateBook(string $isbn, string $title): void
+    private function ensureNotDuplicateBook(string $isbn, string $title): void
     {
         $book = $this->repository->search($isbn);
         if (!is_null($book)) {
