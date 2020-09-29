@@ -5,11 +5,11 @@ namespace App\Controller;
 use App\Application\AllBookFinder;
 use App\Application\BookCreator;
 use App\Application\BookFinder;
+use App\Application\BookRemover;
 use App\Application\BookUpdater;
 use App\Domain\BookAlreadyExists;
 use App\Domain\BookNotExist;
 use App\Entity\Book;
-use App\Repository\BookRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,19 +18,24 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class BooksController extends AbstractController
 {
-    private BookRepository $repository;
     private BookFinder $finder;
     private AllBookFinder $allFinder;
     private BookCreator $creator;
     private BookUpdater $updater;
+    private BookRemover $remover;
 
-    public function __construct(BookRepository $bookRepository, BookFinder $finder, AllBookFinder $allFinder, BookCreator $creator, BookUpdater $updater)
+    public function __construct(
+        BookFinder $finder,
+        AllBookFinder $allFinder,
+        BookCreator $creator,
+        BookUpdater $updater,
+        BookRemover $remover)
     {
-        $this->repository = $bookRepository;
         $this->finder = $finder;
         $this->allFinder = $allFinder;
         $this->creator = $creator;
         $this->updater = $updater;
+        $this->remover = $remover;
     }
 
     /**
@@ -148,11 +153,18 @@ class BooksController extends AbstractController
      */
     public function remove(string $isbn): Response
     {
-        $book = $this->repository->search($isbn);
+        try {
 
-        if (!is_null($book))
-        {
-            $this->repository->remove($book);
+            $this->remover->remove($isbn);
+
+        } catch (BookNotExist $exception) {
+            return new JsonResponse(
+                [
+                    'error' => "Book with isbn " . $isbn . " does not exist.",
+                    "status" => Response::HTTP_NOT_FOUND,
+                ],
+                Response::HTTP_NOT_FOUND
+            );
         }
 
         return new Response('', Response::HTTP_OK);
