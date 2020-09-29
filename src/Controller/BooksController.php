@@ -45,7 +45,19 @@ class BooksController extends AbstractController
      */
     public function get(string $isbn): JsonResponse
     {
-        $book = $this->finder->find($isbn);
+        try {
+
+            $book = $this->finder->find($isbn);
+
+        } catch (BookNotExist $exception) {
+            return new JsonResponse(
+                [
+                    'error' => "Book with isbn " . $isbn . " does not exist.",
+                    "status" => Response::HTTP_NOT_FOUND,
+                ],
+                Response::HTTP_NOT_FOUND
+            );
+        }
 
         return new JsonResponse(
             [

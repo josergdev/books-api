@@ -23,8 +23,6 @@ class BookUpdater
     {
         $book = $this->finder->find($isbn);
 
-        $this->logger->info("Request: ".$isbn.", ".$title.", ".$author);
-
         $this->ensureNotDuplicateBook($isbn, $title);
 
         $book->updateTitle($title);
@@ -38,7 +36,6 @@ class BookUpdater
         $sameTitleBook = $this->repository->searchByTitle($title);
 
         if (!is_null($sameTitleBook) and $sameTitleBook->isbn() != $isbn) {
-            $this->logger->info("Book: ".$sameTitleBook->isbn().", ".$sameTitleBook->title().", ".$sameTitleBook->author());
             throw new BookAlreadyExists("A book with the same title cannot be added twice.");
         }
 
