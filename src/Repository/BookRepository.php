@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Book;
+use App\Entity\Isbn;
 
 interface BookRepository
 {
@@ -10,7 +11,7 @@ interface BookRepository
 
     public function remove(Book $book): void;
 
-    public function search(string $isbn): ?Book;
+    public function search(Isbn $isbn): ?Book;
 
     public function searchByTitle(string $title): ?Book;
 

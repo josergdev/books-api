@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Isbn;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -12,10 +13,9 @@ use Doctrine\ORM\Mapping as ORM;
 class Book
 {
     /**
-     * @ORM\Id()
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Embedded(class = "Isbn", columnPrefix = false)
      */
-    private string $isbn;
+    private Isbn $isbn;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -27,14 +27,14 @@ class Book
      */
     private string $author;
 
-    public function __construct(string $isbn, string $title, string $author)
+    public function __construct(Isbn $isbn, string $title, string $author)
     {
         $this->isbn = $isbn;
         $this->title = $title;
         $this->author = $author;
     }
 
-    public function isbn(): string
+    public function isbn(): Isbn
     {
         return $this->isbn;
     }
@@ -49,12 +49,12 @@ class Book
         return $this->author;
     }
 
-    public function updateTitle($title): void
+    public function updateTitle(string $title): void
     {
         $this->title = $title;
     }
 
-    public function updateAuthor($author): void
+    public function updateAuthor(string $author): void
     {
         $this->author = $author;
     }

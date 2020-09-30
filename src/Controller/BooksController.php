@@ -7,9 +7,11 @@ use App\Application\BookCreator;
 use App\Application\BookFinder;
 use App\Application\BookRemover;
 use App\Application\BookUpdater;
-use App\Domain\BookAlreadyExists;
-use App\Domain\BookNotExist;
+use App\Exceptions\BookAlreadyExists;
+use App\Exceptions\BookNotExist;
+use App\Exceptions\ISBNNotValid;
 use App\Entity\Book;
+use App\Entity\Isbn;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -47,7 +49,7 @@ class BooksController extends AbstractController
     {
         try {
 
-            $book = $this->finder->find($isbn);
+            $book = $this->finder->find(new Isbn($isbn));
 
         } catch (BookNotExist $exception) {
             return new JsonResponse(
@@ -57,11 +59,19 @@ class BooksController extends AbstractController
                 ],
                 Response::HTTP_NOT_FOUND
             );
+        } catch (ISBNNotValid $exception) {
+            return new JsonResponse(
+                [
+                    'error' => "ISBN is not valid.",
+                    'status' => Response::HTTP_BAD_REQUEST
+                ],
+                Response::HTTP_BAD_REQUEST
+            );
         }
 
         return new JsonResponse(
             [
-                'isbn' => $book->isbn(),
+                'isbn' => $book->isbn()->value(),
                 'title' => $book->title(),
                 'author' => $book->author()
             ]
@@ -79,7 +89,7 @@ class BooksController extends AbstractController
         $book_mapper = function (Book $book)
         {
             return [
-                'isbn' => $book->isbn(),
+                'isbn' => $book->isbn()->value(),
                 'title' => $book->title(),
                 'author' => $book->author()
             ];
@@ -105,7 +115,7 @@ class BooksController extends AbstractController
 
         try {
 
-            $this->creator->create($isbn, $title, $author);
+            $this->creator->create(new Isbn($isbn), $title, $author);
 
         } catch (BookAlreadyExists $exception) {
             return new JsonResponse(
@@ -115,7 +125,16 @@ class BooksController extends AbstractController
                 ],
                 Response::HTTP_BAD_REQUEST
             );
+        } catch (ISBNNotValid $exception) {
+            return new JsonResponse(
+                [
+                    'error' => "ISBN is not valid.",
+                    'status' => Response::HTTP_BAD_REQUEST
+                ],
+                Response::HTTP_BAD_REQUEST
+            );
         }
+
 
         return new Response('', Response::HTTP_CREATED);
     }
@@ -135,7 +154,7 @@ class BooksController extends AbstractController
 
         try {
 
-            $this->updater->update($isbn, $title, $author);
+            $this->updater->update(new Isbn($isbn), $title, $author);
 
         } catch (BookNotExist $exception) {
             return new JsonResponse(
@@ -153,6 +172,14 @@ class BooksController extends AbstractController
                 ],
                 Response::HTTP_BAD_REQUEST
             );
+        } catch (ISBNNotValid $exception) {
+            return new JsonResponse(
+                [
+                    'error' => "ISBN is not valid.",
+                    'status' => Response::HTTP_BAD_REQUEST
+                ],
+                Response::HTTP_BAD_REQUEST
+            );
         }
 
         return new Response('', Response::HTTP_OK);
@@ -167,7 +194,7 @@ class BooksController extends AbstractController
     {
         try {
 
-            $this->remover->remove($isbn);
+            $this->remover->remove(new Isbn($isbn));
 
         } catch (BookNotExist $exception) {
             return new JsonResponse(
@@ -176,6 +203,14 @@ class BooksController extends AbstractController
                     "status" => Response::HTTP_NOT_FOUND,
                 ],
                 Response::HTTP_NOT_FOUND
+            );
+        } catch (ISBNNotValid $exception) {
+            return new JsonResponse(
+                [
+                    'error' => "ISBN is not valid.",
+                    'status' => Response::HTTP_BAD_REQUEST
+                ],
+                Response::HTTP_BAD_REQUEST
             );
         }
 

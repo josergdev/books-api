@@ -2,7 +2,8 @@
 
 namespace App\Application;
 
-use App\Domain\BookAlreadyExists;
+use App\Exceptions\BookAlreadyExists;
+use App\Entity\Isbn;
 use App\Repository\BookRepository;
 use Psr\Log\LoggerInterface;
 
@@ -10,16 +11,14 @@ class BookUpdater
 {
     private BookFinder $finder;
     private BookRepository $repository;
-    private LoggerInterface $logger;
 
-    public function __construct(BookFinder $finder, BookRepository $repository, LoggerInterface $logger)
+    public function __construct(BookFinder $finder, BookRepository $repository)
     {
         $this->finder = $finder;
         $this->repository = $repository;
-        $this->logger = $logger;
     }
 
-    public function update(string $isbn, string $title, string $author): void
+    public function update(Isbn $isbn, string $title, string $author): void
     {
         $book = $this->finder->find($isbn);
 
@@ -31,15 +30,13 @@ class BookUpdater
         $this->repository->save($book);
     }
 
-    public function ensureNotDuplicateBook(string $isbn, string $title): void
+    public function ensureNotDuplicateBook(Isbn $isbn, string $title): void
     {
         $sameTitleBook = $this->repository->searchByTitle($title);
 
-        if (!is_null($sameTitleBook) and $sameTitleBook->isbn() != $isbn) {
+        if (!is_null($sameTitleBook) and !$sameTitleBook->isbn()->equals($isbn)) {
             throw new BookAlreadyExists("A book with the same title cannot be added twice.");
         }
-
-        $this->logger->info("book is null");
     }
 
 }

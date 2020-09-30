@@ -2,8 +2,9 @@
 
 namespace App\Application;
 
-use App\Domain\BookNotExist;
+use App\Exceptions\BookNotExist;
 use App\Entity\Book;
+use App\Entity\Isbn;
 use App\Repository\BookRepository;
 
 class BookFinder
@@ -15,7 +16,7 @@ class BookFinder
         $this->repository = $repository;
     }
 
-    public function find(string $isbn): Book
+    public function find(Isbn $isbn): Book
     {
         $book = $this->repository->search($isbn);
 
@@ -24,10 +25,10 @@ class BookFinder
         return $book;
     }
 
-    private function ensureBookExist(?Book $book, string $isbn): void
+    private function ensureBookExist(?Book $book, Isbn $isbn): void
     {
         if (is_null($book)) {
-            throw new BookNotExist($isbn);
+            throw new BookNotExist();
         }
     }
 

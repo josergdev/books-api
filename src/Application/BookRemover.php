@@ -2,6 +2,7 @@
 
 namespace App\Application;
 
+use App\Entity\Isbn;
 use App\Repository\BookRepository;
 
 class BookRemover
@@ -15,7 +16,7 @@ class BookRemover
         $this->repository = $repository;
     }
 
-    public function remove(string $isbn): void
+    public function remove(Isbn $isbn): void
     {
         $book = $this->finder->find($isbn);
 

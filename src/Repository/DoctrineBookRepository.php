@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Book;
+use App\Entity\Isbn;
 use Doctrine\ORM\EntityManagerInterface;
 
 class DoctrineBookRepository implements BookRepository
@@ -26,7 +27,7 @@ class DoctrineBookRepository implements BookRepository
         $this->entityManager->flush();
     }
 
-    public function search(string $isbn): ?Book
+    public function search(Isbn $isbn): ?Book
     {
         return $this->entityManager->getRepository(Book::class)->find($isbn);
     }

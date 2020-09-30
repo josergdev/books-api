@@ -1,11 +1,10 @@
 <?php
 
-
 namespace App\Application;
 
-
-use App\Domain\BookAlreadyExists;
+use App\Exceptions\BookAlreadyExists;
 use App\Entity\Book;
+use App\Entity\Isbn;
 use App\Repository\BookRepository;
 
 class BookCreator
@@ -16,7 +15,7 @@ class BookCreator
         $this->repository = $repository;
     }
 
-    public function create(string $isbn, string $title, string $author): void
+    public function create(Isbn $isbn, string $title, string $author): void
     {
         $this->ensureNotDuplicateBook($isbn, $title);
 
@@ -25,7 +24,7 @@ class BookCreator
         $this->repository->save($book);
     }
 
-    private function ensureNotDuplicateBook(string $isbn, string $title): void
+    private function ensureNotDuplicateBook(Isbn $isbn, string $title): void
     {
         $book = $this->repository->search($isbn);
         if (!is_null($book)) {
