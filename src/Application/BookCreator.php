@@ -10,6 +10,7 @@ use App\Repository\BookRepository;
 class BookCreator
 {
     private BookRepository $repository;
+
     public function __construct(BookRepository $repository)
     {
         $this->repository = $repository;
